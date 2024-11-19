@@ -87,6 +87,10 @@ body::before {
   height:600px;
 }
 
+.example-images{
+  height:80px;
+}
+
 body {
   background-image: url('images/leaves.jpg');  /* Path to your image */
   background-size: cover;         /* Cover the entire screen */
@@ -220,7 +224,7 @@ section h2 {
   scroll-behavior: smooth;
 }
 
-.left-example p {
+.left-example, .right-example, .centre-example p {
   margin-bottom: 1.5em; /* Adds space between paragraphs */
   text-align: justify;
 }
