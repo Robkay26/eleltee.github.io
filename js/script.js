@@ -61,7 +61,6 @@ document.addEventListener('mouseup', async (event) => {
                     <span class="color-circle" data-color="red" style="background-color: red;"></span>
                     <span class="color-circle" data-color="green" style="background-color: green;"></span>
                     <span class="color-circle" data-color="blue" style="background-color: blue;"></span>
-                    <span class="color-circle" data-color="yellow" style="background-color: yellow;"></span>
                 </div>
             `;
 
