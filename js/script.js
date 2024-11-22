@@ -92,3 +92,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+const spinImage = document.getElementById('spinImage');
+
+spinImage.addEventListener('click', function(){
+    this.classList.add('spin');
+
+    setTimeout(()=> {
+        this.classList.remove('spin');
+    }, 600);
+})
+
