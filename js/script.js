@@ -1,96 +1,142 @@
 // Example of additional functionality: Modal for Contact page (optional)
 console.log("its working!")
+const tooltip = document.getElementById('tooltip');
+//const apiKey = 'YOUR_DICTIONARY_API_KEY'; // Replace with your API key if required
+const apiUrl = 'https://api.dictionaryapi.dev/api/v2/entries/en/'; // Example API
 
-document.addEventListener("DOMContentLoaded", function () {
-    const words = document.querySelectorAll(".clickable-word");
-    const modal = document.querySelector(".modal");
-    const modalContent = document.querySelector(".modal-content");
-    const closeButton = document.querySelector(".close");
-    const saveButton = document.getElementById("save-button");
-    const centreExample = document.querySelector(".centre-example");
 
-    // Event listener for clickable words
-    words.forEach(word => {
-        word.addEventListener("click", function (e) {
-            // Get the position of the clicked word
-            const rect = word.getBoundingClientRect();
-            const scrollTop = window.scrollY || document.documentElement.scrollTop;
-            const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+document.addEventListener('mouseup', async (event) => {
+    const selection = window.getSelection();
+    const word = selection.toString().trim();
 
-            // Update the popup content
-            // Populate the popup with word details
-            const dictionaryEntry = modalContent.querySelector('.dictionary-entry');
-            dictionaryEntry.querySelector('.word').textContent = word.getAttribute("data-word");
-            dictionaryEntry.querySelector('.definition').textContent = word.getAttribute("data-definition");
-            dictionaryEntry.querySelector('.ex').textContent = `e.g., ${word.getAttribute("data-example")}`;
-            
-            saveButton.dataset.word = word.getAttribute("data-word");
-            saveButton.dataset.definition = word.getAttribute("data-definition");
-            saveButton.dataset.example = word.getAttribute("data-example");
+    if (!word) return;
 
-            // Position the modal near the clicked word
-            modalContent.style.position = "absolute";
-            modalContent.style.top = `${rect.top + scrollTop + 20}px`; // Slightly below the word
-            modalContent.style.left = `${rect.left + scrollLeft}px`; // Aligned with the word
+    const range = selection.getRangeAt(0).getBoundingClientRect();
+    const { x, y, height } = range;
 
-            // Show the modal
-            modal.style.display = "flex";
-            console.log("click")
-        });
-    });
+    // Declare variables in a broader scope
+    let definition = '';
+    let example = '';
 
-    // Close the modal when the close button is clicked
-    closeButton.addEventListener("click", function () {
-        modal.style.display = "none";
-    });
+    try {
+        const response = await fetch(`${apiUrl}${word}`);
+        const data = await response.json();
 
-    saveButton.addEventListener("click", function () {
-        // Get the data attributes from the Save button
-        const word = this.dataset.word;
-        const definition = this.dataset.definition;
-        const example = this.dataset.example;
+        // Extract and display definition
+        if (data[0]?.meanings?.length) {
+            definition = data[0].meanings[0].definitions[0].definition || "No definition available.";
+            example = data[0].meanings[0].definitions[0].example || "No example available.";
 
-        // Create a new flashcard element
-        const flashcard = document.createElement("div");
-        flashcard.classList.add("flashcard");
-        flashcard.innerHTML = `
-            <p><strong>${word}</strong></p>
-            <p>${definition}</p>
-            <p><em>${example}</em></p>
-            <div class="highlight-picker">
-                <span class="color-circle" data-color="red" style="background-color: red;"></span>
-                <span class="color-circle" data-color="green" style="background-color: green;"></span>
-                <span class="color-circle" data-color="blue" style="background-color: blue;"></span>
-                <span class="color-circle" data-color="yellow" style="background-color: yellow;"></span>
-            </div>
-        `;
-            // Add event listeners to color circles
-        const colorCircles = flashcard.querySelectorAll(".color-circle");
-        colorCircles.forEach(circle => {
-            circle.addEventListener("click", function () {
-                const selectedColor = this.getAttribute("data-color");
-                const targetWords = document.querySelectorAll(`.right-example .highlighted-word[data-word="${word}"]`);
-
-                targetWords.forEach(targetWord => {
-                    targetWord.style.color = selectedColor;
-                })
-            });
-        });
-
-        // Append the flashcard to the centre-example section
-        centreExample.appendChild(flashcard);
-
-        // Close the modal
-        modal.style.display = "none";
-    });
-
-    // Optional: Close the modal when clicking outside the modal content
-    modal.addEventListener("click", function (e) {
-        if (e.target === modal) {
-            modal.style.display = "none";
+            tooltip.innerHTML = `
+                <p><strong>${word}</strong></p>
+                <p>${definition}</p>
+                <p><em>${example}</em></p>
+                <p><button id="save-button" class="save-button">Save</button></p>
+            `;
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y + height + window.scrollY}px`;
+            tooltip.style.display = 'block';
+        } else {
+            tooltip.innerHTML = `<strong>${word}:</strong> No definition found.`;
+            tooltip.style.display = 'block';
         }
-    });
+    } catch (error) {
+        tooltip.innerHTML = `<strong>Error:</strong> Could not fetch the definition.`;
+        tooltip.style.display = 'block';
+    }
+
+    // Add the event listener for the Save button after it is added to the DOM
+    const saveButton = document.getElementById("save-button");
+
+    if (saveButton) {
+        saveButton.addEventListener("click", function () {
+            // Create a new flashcard element
+            const flashcard = document.createElement("div");
+            flashcard.classList.add("flashcard");
+            flashcard.innerHTML = `
+                <p><strong>${word}</strong></p>
+                <p>${definition}</p>
+                <p><em>${example}</em></p>
+                <div class="highlight-picker">
+                    <span class="color-circle" data-color="red" style="background-color: red;"></span>
+                    <span class="color-circle" data-color="green" style="background-color: green;"></span>
+                    <span class="color-circle" data-color="blue" style="background-color: blue;"></span>
+                    <span class="color-circle" data-color="yellow" style="background-color: yellow;"></span>
+                </div>
+            `;
+
+            // Add event listeners to color circles
+            function highlightWord(word, color) {
+                // Escape special characters for the RegExp
+                const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            
+                // Define a regular expression to find the word (case-insensitive)
+                const wordRegex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
+            
+                // Traverse all text nodes in the document and wrap matching words
+                traverseAndHighlight(document.body, wordRegex, color);
+            }
+            
+            function traverseAndHighlight(node, wordRegex, color) {
+                // Text node
+                if (node.nodeType === 3) {
+                    const matches = node.nodeValue.match(wordRegex);
+                    if (matches) {
+                        const parent = node.parentNode;
+            
+                        // Replace text node with highlighted spans
+                        const html = node.nodeValue.replace(wordRegex, match => {
+                            return `<span class="highlighted-word" style="background-color: ${color}; color: white;">${match}</span>`;
+                        });
+            
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = html;
+            
+                        // Insert the new nodes
+                        while (tempDiv.firstChild) {
+                            parent.insertBefore(tempDiv.firstChild, node);
+                        }
+            
+                        // Remove the original text node
+                        parent.removeChild(node);
+                    }
+                }
+                // Element node: recurse into child nodes
+                else if (node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+                    Array.from(node.childNodes).forEach(childNode => {
+                        traverseAndHighlight(childNode, wordRegex, color);
+                    });
+                }
+            }
+            
+            // Example: Call highlightWord when a color circle is clicked
+            const colorCircles = flashcard.querySelectorAll(".color-circle");
+            colorCircles.forEach(circle => {
+                circle.addEventListener("click", function () {
+                    const selectedColor = this.getAttribute("data-color");
+                    highlightWord(word, selectedColor);
+                });
+            });
+            
+
+            // Append the flashcard to the `centre-example` section
+            const centreExample = document.querySelector('.centre-example');
+            if (centreExample) {
+                centreExample.appendChild(flashcard);
+            } else {
+                console.error("Could not find the .centre-example section.");
+            }
+        });
+    }
 });
+
+
+// Hide tooltip on click elsewhere
+document.addEventListener('click', (event) => {
+    if (!tooltip.contains(event.target)) {
+      tooltip.style.display = 'none';
+    }
+  });
 
 const spinImage = document.getElementById('spinImage');
 
