@@ -13,6 +13,46 @@ body {
   background-color: #f4f4f4;
 }
 
+.image-text-container {
+  display: flex;
+  align-items: center; /* Vertically align the image and text */
+  margin-left: 25%;
+}
+
+.clickable-image {
+  max-width: 200px;
+  height: auto;
+  cursor: pointer;
+  margin-right: 20px; /* Add spacing between image and text */
+  margin-top: 20px;
+  transition: transform 0.3s ease;
+}
+
+.clickable-image:hover {
+  transform: scale(1.05);
+}
+
+.text-overlay {
+  opacity: 0;
+  visibility: hidden;
+  color: rgb(0, 0, 0);
+  padding: 10px;
+  border-radius: 5px;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  margin-right: 20%;
+  text-align: left;
+}
+
+.text-overlay p{
+  font-size: larger;
+  color: #007423;
+}
+
+.text-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* Header and Navigation */
 header {
   background-color: #e0faf0;
@@ -276,8 +316,18 @@ section p {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.research, .design, .references h1 {
+.research, .design {
   font-size: larger;
+}
+
+.references h1{
+  font-size: x-large;
+}
+
+.references p{
+  text-align: left;
+  margin-left: 20%;
+  margin-right: 20%;
 }
 
 .save-button{

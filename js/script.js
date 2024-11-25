@@ -1,9 +1,6 @@
-// Example of additional functionality: Modal for Contact page (optional)
 console.log("its working!")
 const tooltip = document.getElementById('tooltip');
-//const apiKey = 'YOUR_DICTIONARY_API_KEY'; // Replace with your API key if required
-const apiUrl = 'https://api.dictionaryapi.dev/api/v2/entries/en/'; // Example API
-
+const apiUrl = 'https://api.dictionaryapi.dev/api/v2/entries/en/'; 
 
 document.addEventListener('mouseup', async (event) => {
     const selection = window.getSelection();
@@ -14,7 +11,6 @@ document.addEventListener('mouseup', async (event) => {
     const range = selection.getRangeAt(0).getBoundingClientRect();
     const { x, y, height } = range;
 
-    // Declare variables in a broader scope
     let definition = '';
     let example = '';
 
@@ -22,7 +18,6 @@ document.addEventListener('mouseup', async (event) => {
         const response = await fetch(`${apiUrl}${word}`);
         const data = await response.json();
 
-        // Extract and display definition
         if (data[0]?.meanings?.length) {
             definition = data[0].meanings[0].definitions[0].definition || "No definition available.";
             example = data[0].meanings[0].definitions[0].example || "No example available.";
@@ -45,12 +40,10 @@ document.addEventListener('mouseup', async (event) => {
         tooltip.style.display = 'block';
     }
 
-    // Add the event listener for the Save button after it is added to the DOM
     const saveButton = document.getElementById("save-button");
 
     if (saveButton) {
         saveButton.addEventListener("click", function () {
-            // Create a new flashcard element
             const flashcard = document.createElement("div");
             flashcard.classList.add("flashcard");
             flashcard.innerHTML = `
@@ -64,43 +57,29 @@ document.addEventListener('mouseup', async (event) => {
                 </div>
             `;
 
-            // Add event listeners to color circles
             function highlightWord(word, color) {
-                // Escape special characters for the RegExp
                 const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            
-                // Define a regular expression to find the word (case-insensitive)
                 const wordRegex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
-            
-                // Traverse all text nodes in the document and wrap matching words
                 traverseAndHighlight(document.body, wordRegex, color);
             }
             
             function traverseAndHighlight(node, wordRegex, color) {
-                // Text node
                 if (node.nodeType === 3) {
                     const matches = node.nodeValue.match(wordRegex);
                     if (matches) {
                         const parent = node.parentNode;
-            
-                        // Replace text node with highlighted spans
                         const html = node.nodeValue.replace(wordRegex, match => {
                             return `<span class="highlighted-word" style="background-color: ${color}; color: white;">${match}</span>`;
                         });
-            
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = html;
-            
-                        // Insert the new nodes
                         while (tempDiv.firstChild) {
                             parent.insertBefore(tempDiv.firstChild, node);
                         }
-            
-                        // Remove the original text node
                         parent.removeChild(node);
                     }
                 }
-                // Element node: recurse into child nodes
+
                 else if (node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
                     Array.from(node.childNodes).forEach(childNode => {
                         traverseAndHighlight(childNode, wordRegex, color);
@@ -108,7 +87,6 @@ document.addEventListener('mouseup', async (event) => {
                 }
             }
             
-            // Example: Call highlightWord when a color circle is clicked
             const colorCircles = flashcard.querySelectorAll(".color-circle");
             colorCircles.forEach(circle => {
                 circle.addEventListener("click", function () {
@@ -117,8 +95,6 @@ document.addEventListener('mouseup', async (event) => {
                 });
             });
             
-
-            // Append the flashcard to the `centre-example` section
             const centreExample = document.querySelector('.centre-example');
             if (centreExample) {
                 centreExample.appendChild(flashcard);
@@ -130,20 +106,33 @@ document.addEventListener('mouseup', async (event) => {
 });
 
 
-// Hide tooltip on click elsewhere
 document.addEventListener('click', (event) => {
-    if (!tooltip.contains(event.target)) {
-      tooltip.style.display = 'none';
+    if (tooltip && !tooltip.contains(event.target)) {
+        tooltip.style.display = 'none';
     }
   });
 
-const spinImage = document.getElementById('spinImage');
+document.addEventListener('DOMContentLoaded', () => {
+    const spinImage = document.getElementById('spinImage');
+    if (spinImage) {
+        spinImage.addEventListener('click', function () {
+            this.classList.add('spin');
+            setTimeout(() => {
+                this.classList.remove('spin');
+            }, 600);
+        });
+    } 
+});
 
-spinImage.addEventListener('click', function(){
-    this.classList.add('spin');
 
-    setTimeout(()=> {
-        this.classList.remove('spin');
-    }, 600);
-})
+
+const image = document.querySelector('.clickable-image');
+const textOverlay = document.querySelector('.text-overlay');
+  
+image.addEventListener('click', function(){
+    console.log("image clicked");
+    textOverlay.classList.toggle('show');
+});
+
+  
 
