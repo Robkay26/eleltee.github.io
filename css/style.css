@@ -21,6 +21,7 @@ body {
 
 .clickable-image {
   max-width: 200px;
+  max-height: 500px;
   height: auto;
   cursor: pointer;
   margin-right: 20px; /* Add spacing between image and text */
@@ -145,7 +146,7 @@ body::before {
 }
 
 .images {
-  height:600px;
+  max-height:700px;
 }
 
 .example-images{
